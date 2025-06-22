@@ -20,6 +20,11 @@ func main() {
 		log.Fatalf("Database health check failed: %v", err)
 	}
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Hello World! Task Management API is running."))
+	})
+
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		if err := database.HealthCheck(); err != nil {
 			http.Error(w, "Database connection failed", http.StatusServiceUnavailable)
