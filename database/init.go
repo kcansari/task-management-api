@@ -15,6 +15,10 @@ func Initialize(cfg *config.Config) error {
 		return err
 	}
 
+	if err := SeedData(); err != nil {
+		log.Printf("Warning: Failed to seed data: %v", err)
+	}
+
 	log.Println("Database initialized successfully")
 	return nil
 }
