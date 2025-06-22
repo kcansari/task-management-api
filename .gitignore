@@ -30,6 +30,8 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Project documentation (keeping locally but not committing)
 architecture.md
 projectplan.md
 CLAUDE.md
