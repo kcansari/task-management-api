@@ -1,0 +1,70 @@
+# Docker Compose configuration for local development and testing
+# This sets up the entire application stack with one command: docker-compose up
+
+version: '3.8'
+
+services:
+  # PostgreSQL database service
+  postgres:
+    image: postgres:15-alpine
+    container_name: task-api-postgres
+    
+    # Environment variables for PostgreSQL initialization
+    environment:
+      - .env
+      
+    # Persist database data between container restarts
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
+    # Expose PostgreSQL port for external connections (development only)
+    ports:
+      - "5432:5432"
+      
+    # Health check to ensure database is ready
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Main application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-api-app
+    
+    # Environment variables for the application
+    environment:
+      - .env
+      
+    # Expose application port
+    ports:
+      - "8080:8080"
+      
+    # Wait for database to be healthy before starting app
+    depends_on:
+      postgres:
+        condition: service_healthy
+        
+    # Restart policy for production deployments
+    restart: unless-stopped
+    
+    # Health check for the application
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Named volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+
+# Custom network (optional, but good practice)
+networks:
+  default:
+    name: task-api-network
